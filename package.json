@@ -13,6 +13,7 @@
   "dependencies": {
     "node-forge": "^0.10.0",
     "parcel-bundler": "^1.12.4",
-    "phaser": "^3.24.1"
+    "phaser": "^3.24.1",
+    "webfontloader": "^1.6.28"
   }
 }

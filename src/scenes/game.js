@@ -1,14 +1,21 @@
 import Phaser from 'phaser';
 
+import WebFontFile from './webFontFile';
+
 export default class Game extends Phaser.Scene {
 
     init() {
 
+        // SCORES
         this.leftScore = 0;
         this.rightScore = 0;
 
     };
     preload() {
+
+        // GOOGLE FONT
+        const fonts = new WebFontFile(this.load, 'Press Start 2P');
+        this.load.addFile(fonts);
 
     };
     create() {
@@ -38,7 +45,10 @@ export default class Game extends Phaser.Scene {
         this.cursors = this.input.keyboard.createCursorKeys();
 
         // SCORES
-        const scoreStyle = {fontSize: 48};
+        const scoreStyle = {
+            fontSize: 48,
+            fontFamily: '"Press Start 2P"'
+        };
         // left score
         this.leftScoreLabel = this.add.text(350, 32, '0', scoreStyle).setOrigin(0.5, 0.5);
         // right score
