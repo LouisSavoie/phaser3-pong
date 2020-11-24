@@ -64,6 +64,10 @@ export default class Game extends Phaser.Scene {
     };
     update() {
 
+        if (this.paused) {
+            return;
+        }
+
         // PADDLE LEFT CONTROL
         this.updatePlayer();
 
@@ -72,6 +76,9 @@ export default class Game extends Phaser.Scene {
 
         // SCORING
         this.checkScore();
+
+        // CHECK FOR WIN
+        this.checkWin();
     };
 
     // PADDLE LEFT CONTROL
@@ -128,6 +135,21 @@ export default class Game extends Phaser.Scene {
     incrementRightScore() {
         this.rightScore += 1;
         this.rightScoreLabel.text = this.rightScore.toString();
+    };
+
+    // CHECK FOR WIN
+    checkWin() {
+        const maxScore = 1;
+        if (this.leftScore >= maxScore) {
+            // player wins
+            this.scene.stop('gameBackground');
+            this.scene.start('winScreen');
+
+        } else if (this.rightScore >= maxScore) {
+            // ai wins
+            this.scene.stop('gameBackground');
+            this.scene.start('loseScreen');
+        }
     };
 
     // RESET BALL
