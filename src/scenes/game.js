@@ -32,8 +32,6 @@ export default class Game extends Phaser.Scene {
         this.ball.body.setBounce(1, 1);
         this.ball.body.setCollideWorldBounds(true, 1, 1);
 
-        this.resetBall();
-
         // PADDLE LEFT
         this.paddleLeft = this.add.rectangle(50, 225, 30, 100, Colors.White, 1);
         this.physics.add.existing(this.paddleLeft, true);
@@ -58,6 +56,10 @@ export default class Game extends Phaser.Scene {
 
         // right score
         this.rightScoreLabel = this.add.text(475, 48, '0', scoreStyle).setOrigin(0.5, 0.5);
+
+        this.time.delayedCall(1500, () => {
+            this.resetBall();
+        });
     };
     update() {
 

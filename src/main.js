@@ -23,4 +23,4 @@ game.scene.add('titleScreen', TitleScreen);
 game.scene.add('game', Game);
 game.scene.add('gameBackground', GameBackground);
 
-game.scene.start('game');
+game.scene.start('titleScreen');
