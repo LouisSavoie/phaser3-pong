@@ -37,17 +37,17 @@ export default class Game extends Phaser.Scene {
         this.ball.body.setBounce(1, 1);
         this.ball.body.setCollideWorldBounds(true, 1, 1);
         this.ball.body.onWorldBounds = true;
-        this.physics.world.on('worldbounds', this.ballBoundsSound, this);
+        this.physics.world.on('worldbounds', this.ballBoundsCollision, this);
 
         // PADDLE LEFT
         this.paddleLeft = this.add.rectangle(50, 225, 30, 100, Colors.White, 1);
         this.physics.add.existing(this.paddleLeft, true);
-        this.physics.add.collider(this.paddleLeft, this.ball, this.playBeep, undefined, this);
+        this.physics.add.collider(this.paddleLeft, this.ball, this.ballPaddleCollision, undefined, this);
 
         // PADDLE RIGHT
         this.paddleRight = this.add.rectangle(750, 225, 30, 100, Colors.White, 1);
         this.physics.add.existing(this.paddleRight, true);
-        this.physics.add.collider(this.paddleRight, this.ball, this.playBeep, undefined, this);
+        this.physics.add.collider(this.paddleRight, this.ball, this.ballPaddleCollision, undefined, this);
 
         // CONTROLS
         this.cursors = this.input.keyboard.createCursorKeys();
@@ -64,15 +64,12 @@ export default class Game extends Phaser.Scene {
         // right score
         this.rightScoreLabel = this.add.text(475, 48, '0', scoreStyle).setOrigin(0.5, 0.5);
 
+        // START BALL MOVEMENT
         this.time.delayedCall(1500, () => {
             this.resetBall();
         });
     };
     update() {
-
-        if (this.paused) {
-            return;
-        }
 
         // PADDLE LEFT CONTROL
         this.updatePlayer();
@@ -104,7 +101,7 @@ export default class Game extends Phaser.Scene {
 
     // PADDLE RIGHT CONTROL
     updateAI() {
-        const aiSpeed = 0.5;
+        const aiSpeed = 2;
 
         const diff = this.ball.y - this.paddleRight.y;
 
@@ -129,7 +126,15 @@ export default class Game extends Phaser.Scene {
         this.sound.play('pongPlop');
     };
 
-    ballBoundsSound(body, up, down, left, right) {
+    // BALL PADDLE COLLISION
+    ballPaddleCollision(paddle, ball) {
+        this.playBeep();
+        this.ball.body.velocity.x *= 1.10;
+        this.ball.body.velocity.y *= 1.10;
+    };
+
+    // BALL WORLDBOUNDS COLLISION
+    ballBoundsCollision(body, up, down, left, right) {
         if (left || right) {
             return;
         } else {
