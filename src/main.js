@@ -1,5 +1,4 @@
 import Phaser from 'phaser';
-
 import TitleScreen from './scenes/titleScreen';
 import Game from './scenes/game';
 import GameBackground from './scenes/gameBackground';

@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
-
 import WebFontFile from './webFontFile';
+import * as Colors from '../consts/colors';
 
 export default class Game extends Phaser.Scene {
 
@@ -27,7 +27,7 @@ export default class Game extends Phaser.Scene {
         this.physics.world.setBounds(-100, 0, 1000, 450);
 
         // BALL
-        this.ball = this.add.circle(400, 225, 10, 0xffffff, 1);
+        this.ball = this.add.circle(400, 225, 10, Colors.White, 1);
         this.physics.add.existing(this.ball);
         this.ball.body.setBounce(1, 1);
         this.ball.body.setCollideWorldBounds(true, 1, 1);
@@ -35,12 +35,12 @@ export default class Game extends Phaser.Scene {
         this.resetBall();
 
         // PADDLE LEFT
-        this.paddleLeft = this.add.rectangle(50, 225, 30, 100, 0xffffff, 1);
+        this.paddleLeft = this.add.rectangle(50, 225, 30, 100, Colors.White, 1);
         this.physics.add.existing(this.paddleLeft, true);
         this.physics.add.collider(this.paddleLeft, this.ball);
 
         // PADDLE RIGHT
-        this.paddleRight = this.add.rectangle(750, 225, 30, 100, 0xffffff, 1);
+        this.paddleRight = this.add.rectangle(750, 225, 30, 100, Colors.White, 1);
         this.physics.add.existing(this.paddleRight, true);
         this.physics.add.collider(this.paddleRight, this.ball);
 
@@ -52,14 +52,27 @@ export default class Game extends Phaser.Scene {
             fontSize: 48,
             fontFamily: '"Press Start 2P"'
         };
+        
         // left score
         this.leftScoreLabel = this.add.text(325, 48, '0', scoreStyle).setOrigin(0.5, 0.5);
+
         // right score
         this.rightScoreLabel = this.add.text(475, 48, '0', scoreStyle).setOrigin(0.5, 0.5);
     };
     update() {
 
         // PADDLE LEFT CONTROL
+        this.updatePlayer();
+
+        // PADDLE RIGHT CONTROL
+        this.updateAI();
+
+        // SCORING
+        this.checkScore();
+    };
+
+    // PADDLE LEFT CONTROL
+    updatePlayer() {
         const playerSpeed = 3;
 
         if (this.cursors.up.isDown) {
@@ -71,8 +84,10 @@ export default class Game extends Phaser.Scene {
             this.paddleLeft.y += playerSpeed;
             this.paddleLeft.body.updateFromGameObject();
         }
+    };
 
-        // PADDLE RIGHT CONTROL
+    // PADDLE RIGHT CONTROL
+    updateAI() {
         const aiSpeed = 0.5;
 
         const diff = this.ball.y - this.paddleRight.y;
@@ -86,8 +101,10 @@ export default class Game extends Phaser.Scene {
             this.paddleRight.y += aiSpeed;
             this.paddleRight.body.updateFromGameObject();
         }
+    };
 
-        // SCORING
+    // SCORING
+    checkScore() {
         if (this.ball.x < -30) {
             // scored on the left side, reset ball
             this.incrementRightScore();
@@ -99,6 +116,7 @@ export default class Game extends Phaser.Scene {
         }
     };
 
+    // UPDATE SCORES
     incrementLeftScore() {
         this.leftScore += 1;
         this.leftScoreLabel.text = this.leftScore.toString();
