@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import WebFontFile from './webFontFile';
 
-export default class TitleScreen extends Phaser.Scene {
+export default class WinScreen extends Phaser.Scene {
     preload() {
 
         // GOOGLE FONT
@@ -11,14 +11,14 @@ export default class TitleScreen extends Phaser.Scene {
     };
     create() {
 
-        // TITLE
-        this.title = this.add.text(400, 225, 'PHASER 3 PONG', {
+        // WIN TEXT
+        this.title = this.add.text(400, 225, 'YOU WIN!', {
             fontSize: 48,
             fontFamily: '"Press Start 2P"'
         }).setOrigin();
 
-        // START MESSAGE
-        this.add.text(400, 400, 'Press SPACE to Start', {
+        // PLAY AGAIN MESSAGE
+        this.add.text(400, 400, 'Press SPACE to Play again', {
             fontSize: 16,
             fontFamily: '"Press Start 2P"'
         }).setOrigin();

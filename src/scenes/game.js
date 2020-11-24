@@ -1,52 +1,91 @@
 import Phaser from 'phaser';
+import WebFontFile from './webFontFile';
+import * as Colors from '../consts/colors';
 
 export default class Game extends Phaser.Scene {
 
     init() {
 
+        // SCORES
         this.leftScore = 0;
         this.rightScore = 0;
 
     };
     preload() {
 
+        // GOOGLE FONT
+        const fonts = new WebFontFile(this.load, 'Press Start 2P');
+        this.load.addFile(fonts);
+
+        // SFX
+        this.load.audio('pongBeep', [ 'assets/ping_pong_8bit_beeep.ogg', 'assets/ping_pong_8bit_beeep.wav', 'assets/ping_pong_8bit_beeep.mp3' ]);
+        this.load.audio('pongPlop', [ 'assets/ping_pong_8bit_plop.ogg', 'assets/ping_pong_8bit_plop.wav', 'assets/ping_pong_8bit_plop.mp3' ]);
+
     };
     create() {
 
-        // SET THE WORLD BOUNDS
+        // BACKGROUND
+        this.scene.run('gameBackground');
+
+        // WORLD BOUNDS
         this.physics.world.setBounds(-100, 0, 1000, 450);
 
         // BALL
-        this.ball = this.add.circle(400, 225, 10, 0xffffff, 1);
+        this.ball = this.add.circle(400, 225, 10, Colors.White, 1);
         this.physics.add.existing(this.ball);
+        this.ball.body.setCircle(10);
         this.ball.body.setBounce(1, 1);
         this.ball.body.setCollideWorldBounds(true, 1, 1);
-
-        this.resetBall();
+        this.ball.body.onWorldBounds = true;
+        this.physics.world.on('worldbounds', this.ballBoundsCollision, this);
 
         // PADDLE LEFT
-        this.paddleLeft = this.add.rectangle(50, 225, 30, 100, 0xffffff, 1);
+        this.paddleLeft = this.add.rectangle(50, 225, 30, 100, Colors.White, 1);
         this.physics.add.existing(this.paddleLeft, true);
-        this.physics.add.collider(this.paddleLeft, this.ball);
+        this.physics.add.collider(this.paddleLeft, this.ball, this.ballPaddleCollision, undefined, this);
 
         // PADDLE RIGHT
-        this.paddleRight = this.add.rectangle(750, 225, 30, 100, 0xffffff, 1);
+        this.paddleRight = this.add.rectangle(750, 225, 30, 100, Colors.White, 1);
         this.physics.add.existing(this.paddleRight, true);
-        this.physics.add.collider(this.paddleRight, this.ball);
+        this.physics.add.collider(this.paddleRight, this.ball, this.ballPaddleCollision, undefined, this);
 
         // CONTROLS
         this.cursors = this.input.keyboard.createCursorKeys();
 
         // SCORES
-        const scoreStyle = {fontSize: 48};
+        const scoreStyle = {
+            fontSize: 48,
+            fontFamily: '"Press Start 2P"'
+        };
+        
         // left score
-        this.leftScoreLabel = this.add.text(350, 32, '0', scoreStyle).setOrigin(0.5, 0.5);
+        this.leftScoreLabel = this.add.text(325, 48, '0', scoreStyle).setOrigin(0.5, 0.5);
+
         // right score
-        this.rightScoreLabel = this.add.text(450, 32, '0', scoreStyle).setOrigin(0.5, 0.5);
+        this.rightScoreLabel = this.add.text(475, 48, '0', scoreStyle).setOrigin(0.5, 0.5);
+
+        // START BALL MOVEMENT
+        this.time.delayedCall(1500, () => {
+            this.resetBall();
+        });
     };
     update() {
 
         // PADDLE LEFT CONTROL
+        this.updatePlayer();
+
+        // PADDLE RIGHT CONTROL
+        this.updateAI();
+
+        // SCORING
+        this.checkScore();
+
+        // CHECK FOR WIN
+        this.checkWin();
+    };
+
+    // PADDLE LEFT CONTROL
+    updatePlayer() {
         const playerSpeed = 3;
 
         if (this.cursors.up.isDown) {
@@ -58,9 +97,11 @@ export default class Game extends Phaser.Scene {
             this.paddleLeft.y += playerSpeed;
             this.paddleLeft.body.updateFromGameObject();
         }
+    };
 
-        // PADDLE RIGHT CONTROL
-        const aiSpeed = 0.5;
+    // PADDLE RIGHT CONTROL
+    updateAI() {
+        const aiSpeed = 2;
 
         const diff = this.ball.y - this.paddleRight.y;
 
@@ -73,19 +114,50 @@ export default class Game extends Phaser.Scene {
             this.paddleRight.y += aiSpeed;
             this.paddleRight.body.updateFromGameObject();
         }
+    };
 
-        // SCORING
+    // PLAY BEEP SFX
+    playBeep(paddle, ball) {
+        this.sound.play('pongBeep');
+    };
+
+    // PLAY PLOP SFX
+    playPlop(paddle, ball) {
+        this.sound.play('pongPlop');
+    };
+
+    // BALL PADDLE COLLISION
+    ballPaddleCollision(paddle, ball) {
+        this.playBeep();
+        this.ball.body.velocity.x *= 1.10;
+        this.ball.body.velocity.y *= 1.10;
+    };
+
+    // BALL WORLDBOUNDS COLLISION
+    ballBoundsCollision(body, up, down, left, right) {
+        if (left || right) {
+            return;
+        } else {
+            this.playPlop();
+        }
+    };
+
+    // SCORING
+    checkScore() {
         if (this.ball.x < -30) {
             // scored on the left side, reset ball
+            this.playPlop();
             this.incrementRightScore();
             this.resetBall();
         } else if (this.ball.x > 830) {
             // scored on the right side, reset ball
+            this.playPlop();
             this.incrementLeftScore();
             this.resetBall();
         }
     };
 
+    // UPDATE SCORES
     incrementLeftScore() {
         this.leftScore += 1;
         this.leftScoreLabel.text = this.leftScore.toString();
@@ -94,6 +166,21 @@ export default class Game extends Phaser.Scene {
     incrementRightScore() {
         this.rightScore += 1;
         this.rightScoreLabel.text = this.rightScore.toString();
+    };
+
+    // CHECK FOR WIN
+    checkWin() {
+        const maxScore = 7;
+        if (this.leftScore >= maxScore) {
+            // player wins
+            this.scene.stop('gameBackground');
+            this.scene.start('winScreen');
+
+        } else if (this.rightScore >= maxScore) {
+            // ai wins
+            this.scene.stop('gameBackground');
+            this.scene.start('loseScreen');
+        }
     };
 
     // RESET BALL
