@@ -29,6 +29,7 @@ export default class Game extends Phaser.Scene {
         // BALL
         this.ball = this.add.circle(400, 225, 10, Colors.White, 1);
         this.physics.add.existing(this.ball);
+        this.ball.body.setCircle(10);
         this.ball.body.setBounce(1, 1);
         this.ball.body.setCollideWorldBounds(true, 1, 1);
 
