@@ -20,7 +20,10 @@ export default class Game extends Phaser.Scene {
     };
     create() {
 
-        // SET THE WORLD BOUNDS
+        // BACKGROUND
+        this.scene.run('gameBackground');
+
+        // WORLD BOUNDS
         this.physics.world.setBounds(-100, 0, 1000, 450);
 
         // BALL
@@ -50,9 +53,9 @@ export default class Game extends Phaser.Scene {
             fontFamily: '"Press Start 2P"'
         };
         // left score
-        this.leftScoreLabel = this.add.text(350, 32, '0', scoreStyle).setOrigin(0.5, 0.5);
+        this.leftScoreLabel = this.add.text(325, 48, '0', scoreStyle).setOrigin(0.5, 0.5);
         // right score
-        this.rightScoreLabel = this.add.text(450, 32, '0', scoreStyle).setOrigin(0.5, 0.5);
+        this.rightScoreLabel = this.add.text(475, 48, '0', scoreStyle).setOrigin(0.5, 0.5);
     };
     update() {
 
