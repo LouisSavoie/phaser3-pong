@@ -17,6 +17,10 @@ export default class Game extends Phaser.Scene {
         const fonts = new WebFontFile(this.load, 'Press Start 2P');
         this.load.addFile(fonts);
 
+        // SFX
+        this.load.audio('pongBeep', [ 'assets/ping_pong_8bit_beeep.ogg', 'assets/ping_pong_8bit_beeep.wav', 'assets/ping_pong_8bit_beeep.mp3' ]);
+        this.load.audio('pongPlop', [ 'assets/ping_pong_8bit_plop.ogg', 'assets/ping_pong_8bit_plop.wav', 'assets/ping_pong_8bit_plop.mp3' ]);
+
     };
     create() {
 
@@ -32,16 +36,18 @@ export default class Game extends Phaser.Scene {
         this.ball.body.setCircle(10);
         this.ball.body.setBounce(1, 1);
         this.ball.body.setCollideWorldBounds(true, 1, 1);
+        this.ball.body.onWorldBounds = true;
+        this.physics.world.on('worldbounds', this.ballBoundsSound, this);
 
         // PADDLE LEFT
         this.paddleLeft = this.add.rectangle(50, 225, 30, 100, Colors.White, 1);
         this.physics.add.existing(this.paddleLeft, true);
-        this.physics.add.collider(this.paddleLeft, this.ball);
+        this.physics.add.collider(this.paddleLeft, this.ball, this.playBeep, undefined, this);
 
         // PADDLE RIGHT
         this.paddleRight = this.add.rectangle(750, 225, 30, 100, Colors.White, 1);
         this.physics.add.existing(this.paddleRight, true);
-        this.physics.add.collider(this.paddleRight, this.ball);
+        this.physics.add.collider(this.paddleRight, this.ball, this.playBeep, undefined, this);
 
         // CONTROLS
         this.cursors = this.input.keyboard.createCursorKeys();
@@ -113,14 +119,34 @@ export default class Game extends Phaser.Scene {
         }
     };
 
+    // PLAY BEEP SFX
+    playBeep(paddle, ball) {
+        this.sound.play('pongBeep');
+    };
+
+    // PLAY PLOP SFX
+    playPlop(paddle, ball) {
+        this.sound.play('pongPlop');
+    };
+
+    ballBoundsSound(body, up, down, left, right) {
+        if (left || right) {
+            return;
+        } else {
+            this.playPlop();
+        }
+    };
+
     // SCORING
     checkScore() {
         if (this.ball.x < -30) {
             // scored on the left side, reset ball
+            this.playPlop();
             this.incrementRightScore();
             this.resetBall();
         } else if (this.ball.x > 830) {
             // scored on the right side, reset ball
+            this.playPlop();
             this.incrementLeftScore();
             this.resetBall();
         }
@@ -139,7 +165,7 @@ export default class Game extends Phaser.Scene {
 
     // CHECK FOR WIN
     checkWin() {
-        const maxScore = 1;
+        const maxScore = 7;
         if (this.leftScore >= maxScore) {
             // player wins
             this.scene.stop('gameBackground');
